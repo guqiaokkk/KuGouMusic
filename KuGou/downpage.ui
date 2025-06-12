@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DownPage</class>
+ <widget class="QWidget" name="DownPage">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>500</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <widget class="QLabel" name="downTitle">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>800</width>
+     <height>50</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Arial</family>
+     <pointsize>18</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>  本地和下载</string>
+   </property>
+  </widget>
+  <widget class="QStackedWidget" name="stackedWidget">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>120</y>
+     <width>800</width>
+     <height>390</height>
+    </rect>
+   </property>
+   <property name="currentIndex">
+    <number>0</number>
+   </property>
+   <widget class="QWidget" name="loaclSongPage">
+    <widget class="QListWidget" name="pageMusicList">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>800</width>
+       <height>390</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">#pageMusicList::item:selected
+{
+	background-color: #EFEFEF;
+	border: 1px solid #CCCCCC;
+    border-radius: 5px; /* 圆角边框 */
+}
+
+QScrollBar:vertical
+{
+ border:none; /*边框去掉*/
+ width:20px; /*宽度15像素*/
+ /*background-color:#FFFFFF; /*背景颜⾊⽩⾊*/
+ background-color: transparent;
+ margin:0px 0px 0px 0px; /*边距不要*/
+}
+QScrollBar::handle:vertical /*设置⽔平滑竿*/
+{
+ width:20px;
+ background-color:rgb(222, 222, 222);
+ border-radius:5px; 
+ min-height:20px;
+}
+
+QScrollBar::groove:vertical
+{
+ background-color: FFFFFF;
+ border: none;
+}
+</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="downLoadSongPage">
+    <widget class="QListWidget" name="listWidget_2">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>790</width>
+       <height>500</height>
+      </rect>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="downLoadVideoPage">
+    <widget class="QListWidget" name="listWidget_3">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>800</width>
+       <height>500</height>
+      </rect>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="downLoadingPage">
+    <widget class="QListWidget" name="listWidget_4">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>800</width>
+       <height>500</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label">
+     <property name="geometry">
+      <rect>
+       <x>110</x>
+       <y>84</y>
+       <width>421</width>
+       <height>111</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Loading....</string>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+  <widget class="QWidget" name="allWorks" native="true">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>60</y>
+     <width>800</width>
+     <height>60</height>
+    </rect>
+   </property>
+   <widget class="QPushButton" name="localSong">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>93</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>本地音乐</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="downLoadSong">
+    <property name="geometry">
+     <rect>
+      <x>120</x>
+      <y>10</y>
+      <width>93</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>下载歌曲</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="downLoadVideo">
+    <property name="geometry">
+     <rect>
+      <x>230</x>
+      <y>10</y>
+      <width>93</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>下载视频</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="downLoading">
+    <property name="geometry">
+     <rect>
+      <x>340</x>
+      <y>10</y>
+      <width>93</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>正在下载</string>
+    </property>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
