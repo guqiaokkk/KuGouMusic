@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
+    <width>848</width>
     <height>500</height>
    </rect>
   </property>
@@ -141,7 +141,7 @@ PushButton:hover
         <string>下载</string>
        </property>
       </widget>
-      <widget class="QPushButton" name="show">
+      <widget class="QPushButton" name="playAllBtn">
        <property name="geometry">
         <rect>
          <x>9</x>

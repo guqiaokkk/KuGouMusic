@@ -821,10 +821,7 @@ QPushButton:hover
                      </size>
                     </property>
                     <property name="styleSheet">
-                     <string notr="true">#playMode
-{
- background-image: url(:/Image/shuffle.png);
-}</string>
+                     <string notr="true"/>
                     </property>
                     <property name="text">
                      <string/>
@@ -871,10 +868,7 @@ QPushButton:hover
                      </size>
                     </property>
                     <property name="styleSheet">
-                     <string notr="true">#play
-{
- background-image: url(:/Image/stop.png);
-}</string>
+                     <string notr="true"/>
                     </property>
                     <property name="text">
                      <string/>

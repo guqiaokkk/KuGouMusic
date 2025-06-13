@@ -4,6 +4,7 @@
 #include "musiclist.h"
 
 #include <QWidget>
+#include <QMediaPlaylist>
 
 namespace Ui {
 class CommonPage;
@@ -24,8 +25,15 @@ public:
     void addMusicToMusicPage(MusicList &musicList);
     void reFresh(MusicList &musicList);
 
+    void addMusicToPlayer(MusicList &musicList, QMediaPlaylist *playList);
+
 signals:
     void updatalikeMusic(bool isLike, QString musicId);
+
+    void playAll(QString type); //播放全部
+
+    void playMusicByIndex(QString, int); //双击
+
 
 private:
     Ui::CommonPage *ui;

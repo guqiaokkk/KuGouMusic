@@ -62,5 +62,8 @@
         <file>Image/redlike.png</file>
         <file>Image/dislike.png</file>
         <file>Image/slicent.png</file>
+        <file>Image/musicstop.png</file>
+        <file>Image/listSong.png</file>
+        <file>Image/oneSong.png</file>
     </qresource>
 </RCC>

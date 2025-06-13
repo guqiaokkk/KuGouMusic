@@ -17,6 +17,10 @@ KuGouMusic::KuGouMusic(QWidget *parent)
 {
     ui->setupUi(this);
     initUI();
+
+    //初始化播放器
+    initPlayer();
+
     connectSignalAndSlots();
 }
 
@@ -60,6 +64,9 @@ void KuGouMusic::initUI()
 
     //创建⾳量调节窗⼝对象并挂到对象树
     volumeTool = new VolumeTool(this);
+
+    ui->play->setIcon(QIcon(":/Image/musicstop.png"));  // 默认为暂停图标
+    ui->playMode->setIcon(QIcon(":/Image/shuffle.png"));// 默认为随机播放
 }
 
 void KuGouMusic::connectSignalAndSlots()
@@ -76,6 +83,30 @@ void KuGouMusic::connectSignalAndSlots()
     connect(ui->likePage, &CommonPage::updatalikeMusic, this, &KuGouMusic::onUpdateLikeMusic);
     connect(ui->localPage, &DownPage::updatalikeMusic, this, &KuGouMusic::onUpdateLikeMusic);
     //connect(ui->likePage, &RecentPage::updatalikeMusic, this, &KuGouMusic::onUpdateLikeMusic);
+
+    //暂停，启动
+    connect(ui->play, &QPushButton::clicked, this, &KuGouMusic::onPlayCliked);
+
+    //上下首
+    connect(ui->playPrev, &QPushButton::clicked, this, &KuGouMusic::onPlayUpClicked);
+    connect(ui->playDown, &QPushButton::clicked, this, &KuGouMusic::onPlayDownClicked);
+
+    // 设置播放模式
+    connect(ui->playMode, &QPushButton::clicked, this, &KuGouMusic::onPlaybackModeCliked);
+
+    //不同页面的playAll
+    connect(ui->likePage, &CommonPage::playAll, this, [=](){
+        QString tmp = ui->localPage->typeName();
+        playAllOfPage(tmp, 0);
+    });
+    connect(ui->localPage, &DownPage::playAll, this, [=](){
+        QString tmp = ui->localPage->typeName();
+        playAllOfPage(tmp, 0);
+    });
+
+    //处理不同页面的双击
+    connect(ui->likePage, &CommonPage::playMusicByIndex, this, &KuGouMusic::playMusicByIndex);
+    connect(ui->localPage, &DownPage::playMusicByIndex, this, &KuGouMusic::playMusicByIndex);
 }
 
 void KuGouMusic::onUpdateLikeMusic(bool isLike, QString musicId)
@@ -89,6 +120,141 @@ void KuGouMusic::onUpdateLikeMusic(bool isLike, QString musicId)
     ui->likePage->reFresh(musicList);
     ui->localPage->reFresh(musicList);
     //ui->recentPage->reFresh();
+}
+
+void KuGouMusic::initPlayer()
+{
+    player = new QMediaPlayer(this);
+    playlist = new QMediaPlaylist(this);
+
+    //设置播放模式：默认为随机播放
+    playlist->setPlaybackMode(QMediaPlaylist::Random);
+
+    // 将播放列表设置给播放器
+    player->setPlaylist(playlist);
+
+    //默认音量
+    player->setVolume(20);
+
+    // QMediaPlayer信号和槽函数关联  播放状态改变时：暂停和播放之间切换
+    connect(player, &QMediaPlayer::stateChanged, this, &KuGouMusic::onPlayStateChanged);
+
+    // 播放列表的模式放⽣改变时的信号槽关联
+    connect(playlist, &QMediaPlaylist::playbackModeChanged, this, &KuGouMusic::onPlaybackModeChanged);
+}
+
+void KuGouMusic::onPlayCliked()
+{
+    if(player->state() == QMediaPlayer::PlayingState)
+    {
+        // 如果是歌曲正在播放中，按下播放键，此时应该暂停播放
+        player->pause();
+    }
+    else if(player->state() == QMediaPlayer::PausedState)
+    {
+        // 如果是暂停状态，按下播放键，继续开始播放
+        player->play();
+    }
+    else if(player->state() == QMediaPlayer::StoppedState)
+    {
+        player->play();
+    }
+
+}
+
+void KuGouMusic::onPlayStateChanged()
+{
+    if(player->state() == QMediaPlayer::PlayingState)
+    {
+        // 播放状态
+        ui->play->setIcon(QIcon(":/Image/stop.png"));
+    }
+    else
+    {
+        // 暂停状态
+        ui->play->setIcon(QIcon(":/Image/musicstop.png"));
+    }
+}
+
+void KuGouMusic::onPlayUpClicked()
+{
+    playlist->previous();
+}
+
+void KuGouMusic::onPlayDownClicked()
+{
+    playlist->next();
+}
+
+void KuGouMusic::onPlaybackModeCliked()
+{
+    // 播放模式⽀持：循环播放、随机播放、单曲循环三种模式
+    if(playlist->playbackMode() == QMediaPlaylist::Loop)
+    {
+        //列表循环
+        ui->playMode->setToolTip("随机播放");
+        playlist->setPlaybackMode(QMediaPlaylist::Random);
+    }
+    else if(playlist->playbackMode() == QMediaPlaylist::Random)
+    {
+        //随机播放
+        ui->playMode->setToolTip("单曲循环");
+        playlist->setPlaybackMode(QMediaPlaylist::CurrentItemInLoop);
+    }
+    else if(playlist->playbackMode() == QMediaPlaylist::CurrentItemInLoop)
+    {
+        ui->playMode->setToolTip("列表循环");
+        playlist->setPlaybackMode(QMediaPlaylist::Loop);
+    }
+    else
+    {
+        qDebug() << "未识别的播放模式，暂不支持";
+    }
+}
+
+void KuGouMusic::onPlaybackModeChanged(QMediaPlaylist::PlaybackMode playbackMode)
+{
+    if(playbackMode == QMediaPlaylist::Loop)
+    {
+        ui->playMode->setIcon(QIcon(":/Image/listSong.png"));
+    }
+    else if(playbackMode == QMediaPlaylist::Random)
+    {
+        ui->playMode->setIcon(QIcon(":/Image/shuffle.png"));
+    }
+    else if(playbackMode == QMediaPlaylist::CurrentItemInLoop)
+    {
+        ui->playMode->setIcon(QIcon(":/Image/oneSong.png"));
+    }
+    else
+    {
+        qDebug() << "此模式暂时不支持";
+    }
+}
+
+
+
+void KuGouMusic::playAllOfPage(QString type, int index)
+{
+    playlist->clear();
+
+    if(type == "我喜欢")
+    {
+        ui->likePage->addMusicToPlayer(musicList, playlist);
+    }
+    else if(type == "本地音乐")
+    {
+        ui->localPage->addMusicToPlayer(musicList, playlist);
+    }
+
+    playlist->setCurrentIndex(index);
+
+    player->play();
+}
+
+void KuGouMusic::playMusicByIndex(QString type, int index)
+{
+    playAllOfPage(type, index);
 }
 
 
@@ -225,5 +391,7 @@ void KuGouMusic::on_addLocal_clicked()
 
         // 更新到本地⾳乐列表
         ui->localPage->reFresh(musicList);
+
+        ui->localPage->addMusicToPlayer(musicList, playlist);
     }
 }

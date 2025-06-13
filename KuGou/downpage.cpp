@@ -25,6 +25,14 @@ DownPage::DownPage(QWidget *parent) :
             ui->stackedWidget->setCurrentIndex(3);
     });
 
+    connect(ui->playAllBtn, &QPushButton::clicked, this,[=](){
+            emit playAll(type);
+    });
+
+    connect(ui->pageMusicList, &QListWidget::doubleClicked, this, [=](const QModelIndex &index){
+       // ⿏标双击后，发射信号告诉QQMusic，博能放this⻚⾯中共被双击的歌曲
+        emit playMusicByIndex(this->typeName(), index.row());
+    });
 }
 
 DownPage::~DownPage()
@@ -82,10 +90,17 @@ void DownPage::reFresh(MusicList &musicList)
     repaint();
 }
 
-
+void DownPage::addMusicToPlayer(MusicList &musicList, QMediaPlaylist *playList)
+{
+    // 根据当前的⻚⾯,将⾳乐添加到playList中
+    for(auto music : musicList)
+    {
+        playList->addMedia(music.getMusicUrl());
+    }
+}
 
 
 void DownPage::on_localSong_clicked()
 {
-    qDebug() << "local";
+    qDebug() << "jiayou";
 }

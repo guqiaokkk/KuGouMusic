@@ -11,6 +11,15 @@ CommonPage::CommonPage(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    connect(ui->playAllBtn, &QPushButton::clicked, this,[=](){
+            emit playAll(type);
+    });
+
+    connect(ui->pageMusicList, &QListWidget::doubleClicked, this, [=](const QModelIndex &index){
+       // ⿏标双击后，发射信号告诉QQMusic，博能放this⻚⾯中共被双击的歌曲
+        emit playMusicByIndex(this->typeName(), index.row());
+    });
+
 }
 
 CommonPage::~CommonPage()
@@ -79,5 +88,18 @@ void CommonPage::reFresh(MusicList &musicList)
         connect(listItemBox, &ListItemBox::setIsLike, this, [=](bool isLike){
            emit updatalikeMusic(isLike, it->getMusicId());
         });
+    }
+}
+
+void CommonPage::addMusicToPlayer(MusicList &musicList, QMediaPlaylist *playList)
+{
+    // 根据当前的⻚⾯,将⾳乐添加到playList中
+    for(auto music : musicList)
+    {
+        if(music.getIsLike())
+        {
+            playList->addMedia(music.getMusicUrl());
+
+        }
     }
 }
