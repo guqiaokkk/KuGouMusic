@@ -43,6 +43,8 @@ public:
 
     void playMusicByIndex(QString type, int index);
 
+    void onCurrentIndexChanged(int index);
+
 private slots:
     void on_quit_clicked();
 
@@ -69,5 +71,7 @@ private:
 
     QMediaPlayer *player; // 播放器相关
     QMediaPlaylist *playlist; //给播放器设置媒体列表
+
+    QString nowType; //标识当前页面
 };
 #endif // KUGOUMUSIC_H

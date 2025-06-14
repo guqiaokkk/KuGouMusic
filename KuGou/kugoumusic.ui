@@ -566,7 +566,7 @@ QPushButton:hover
             <item>
              <widget class="QStackedWidget" name="stackedWidget">
               <property name="currentIndex">
-               <number>0</number>
+               <number>5</number>
               </property>
               <widget class="QWidget" name="recPage">
                <widget class="QScrollArea" name="scrollArea">
@@ -697,7 +697,7 @@ QPushButton:hover
               <widget class="QWidget" name="radioPage"/>
               <widget class="CommonPage" name="likePage"/>
               <widget class="DownPage" name="localPage"/>
-              <widget class="QWidget" name="recentPage"/>
+              <widget class="RecentPage" name="recentPage"/>
              </widget>
             </item>
             <item>
@@ -1070,7 +1070,13 @@ QPushButton:hover
   <customwidget>
    <class>DownPage</class>
    <extends>QWidget</extends>
-   <header location="global">downpage.h</header>
+   <header>downpage.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>RecentPage</class>
+   <extends>QWidget</extends>
+   <header location="global">recentpage.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

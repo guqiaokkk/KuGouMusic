@@ -27,6 +27,7 @@ SOURCES += \
     musicslider.cpp \
     recbox.cpp \
     recboxitem.cpp \
+    recentpage.cpp \
     volumetool.cpp
 
 HEADERS += \
@@ -40,6 +41,7 @@ HEADERS += \
     musicslider.h \
     recbox.h \
     recboxitem.h \
+    recentpage.h \
     volumetool.h
 
 FORMS += \
@@ -51,6 +53,7 @@ FORMS += \
     musicslider.ui \
     recbox.ui \
     recboxitem.ui \
+    recentpage.ui \
     volumetool.ui
 
 # Default rules for deployment.

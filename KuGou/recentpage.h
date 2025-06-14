@@ -1,24 +1,25 @@
-#ifndef DOWNPAGE_H
-#define DOWNPAGE_H
+#ifndef RECENTPAGE_H
+#define RECENTPAGE_H
+
+
+
+#include "musiclist.h"
 
 #include <QWidget>
 #include <QMediaPlaylist>
 
 
-#include "musiclist.h"
-
 namespace Ui {
-class DownPage;
+class RecentPage;
 }
 
-class DownPage : public QWidget
+class RecentPage : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit DownPage(QWidget *parent = nullptr);
-    ~DownPage();
-
+    explicit RecentPage(QWidget *parent = nullptr);
+    ~RecentPage();
     QString typeName();
 
     void addMusicToMusicPage(MusicList &musicList);
@@ -26,7 +27,6 @@ public:
 
     void addMusicToPlayer(MusicList &musicList, QMediaPlaylist *playList);
 
-    const QString& getMusicIdByIndex(int index) const;
 
 signals:
     void updatalikeMusic(bool isLike, QString musicId);
@@ -35,14 +35,12 @@ signals:
 
     void playMusicByIndex(QString, int); //双击
 
-private slots:
-    void on_localSong_clicked();
-
 private:
-    Ui::DownPage *ui;
+    Ui::RecentPage *ui;
+
     QString type;
 
     QVector<QString> musicListOfPage; // 具体某个⻚⾯的⾳乐，将来只需要存储⾳乐的id即可
 };
 
-#endif // DOWNPAGE_H
+#endif // RECENTPAGE_H

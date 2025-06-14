@@ -46,3 +46,15 @@ iterator MusicList::findMusicById(const QString &musicId)
     }
     return end();
 }
+
+Music *MusicList::findMusicByUrl(const QUrl &url)
+{
+    for(auto& music : *this)
+    {
+        if(music.getMusicUrl() == url)
+        {
+           return &music;
+        }
+    }
+    return nullptr; // Not found
+}

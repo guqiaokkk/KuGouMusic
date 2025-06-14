@@ -1,29 +1,14 @@
-#include "downpage.h"
-#include "ui_downpage.h"
+#include "recentpage.h"
+#include "ui_recentpage.h"
 
 #include "listitembox.h"
 
-#include <QDebug>
-
-
-DownPage::DownPage(QWidget *parent) :
+RecentPage::RecentPage(QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::DownPage),
-    type("本地音乐")
+    ui(new Ui::RecentPage),
+    type("最近播放")
 {
     ui->setupUi(this);
-    connect(ui->localSong, &QPushButton::clicked, this, [=](){
-            ui->stackedWidget->setCurrentIndex(0);
-    });
-    connect(ui->downLoadSong, &QPushButton::clicked, this, [=](){
-            ui->stackedWidget->setCurrentIndex(1);
-    });
-    connect(ui->downLoadVideo, &QPushButton::clicked, this, [=](){
-            ui->stackedWidget->setCurrentIndex(2);
-    });
-    connect(ui->downLoading, &QPushButton::clicked, this, [=](){
-            ui->stackedWidget->setCurrentIndex(3);
-    });
 
     connect(ui->playAllBtn, &QPushButton::clicked, this,[=](){
             emit playAll(type);
@@ -35,27 +20,30 @@ DownPage::DownPage(QWidget *parent) :
     });
 }
 
-DownPage::~DownPage()
+RecentPage::~RecentPage()
 {
     delete ui;
 }
 
-QString DownPage::typeName()
+QString RecentPage::typeName()
 {
     return type;
 }
 
-void DownPage::addMusicToMusicPage(MusicList &musicList)
+void RecentPage::addMusicToMusicPage(MusicList &musicList)
 {
     // 将旧内容清空
     musicListOfPage.clear();
     for(auto &music : musicList)
     {
+        if(music.getIsHistory())
+        {
             musicListOfPage.push_back(music.getMusicId());
+        }
     }
 }
 
-void DownPage::reFresh(MusicList &musicList)
+void RecentPage::reFresh(MusicList &musicList)
 {
     ui->pageMusicList->clear();
     // 从musicList中分离出当前⻚⾯的所有⾳乐
@@ -70,47 +58,28 @@ void DownPage::reFresh(MusicList &musicList)
             continue;
         }
 
-        ListItemBox *listItemBox = new ListItemBox(ui->pageMusicList);
+        ListItemBox *listItemBox = new ListItemBox(this);
         listItemBox->setMusicName(it->getMusicName());
         listItemBox->setSinger(it->getSingerName());
         listItemBox->setAlbumName(it->getAlbumName());
         listItemBox->setLikeIcon(it->getIsLike());
 
-        QListWidgetItem *listWidgetItem = new QListWidgetItem(ui->pageMusicList);
-        listWidgetItem->setSizeHint(QSize(ui->pageMusicList->width(), 45));
-        ui->pageMusicList->setItemWidget(listWidgetItem, listItemBox);
+        QListWidgetItem *item = new QListWidgetItem(ui->pageMusicList);
+        item->setSizeHint(QSize(listItemBox->width(), listItemBox->height()));
+        ui->pageMusicList->setItemWidget(item, listItemBox);
 
         // 接收ListItemBox发射的setIsLike信号
         connect(listItemBox, &ListItemBox::setIsLike, this, [=](bool isLike){
            emit updatalikeMusic(isLike, it->getMusicId());
         });
     }
-
-    //刷新
-    repaint();
 }
 
-void DownPage::addMusicToPlayer(MusicList &musicList, QMediaPlaylist *playList)
+void RecentPage::addMusicToPlayer(MusicList &musicList, QMediaPlaylist *playList)
 {
     // 根据当前的⻚⾯,将⾳乐添加到playList中
     for(auto music : musicList)
     {
-        playList->addMedia(music.getMusicUrl());
+            playList->addMedia(music.getMusicUrl());
     }
-}
-
-const QString &DownPage::getMusicIdByIndex(int index) const
-{
-    if(index >= musicListOfPage.size())
-    {
-        qDebug() << "无此歌曲";
-        return "";
-    }
-    return  musicListOfPage[index];
-}
-
-
-void DownPage::on_localSong_clicked()
-{
-    qDebug() << "jiayou";
 }

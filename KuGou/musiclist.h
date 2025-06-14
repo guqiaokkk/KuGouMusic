@@ -18,6 +18,8 @@ public:
     iterator begin();
     iterator end();
     iterator findMusicById(const QString &musicId);
+    Music *findMusicByUrl(const QUrl& url);
+
 
 private:
     QVector<Music> musicList;

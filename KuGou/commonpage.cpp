@@ -2,7 +2,7 @@
 #include "ui_commonpage.h"
 
 #include "listitembox.h"
-#include "downpage.h"
+
 
 CommonPage::CommonPage(QWidget *parent) :
     QWidget(parent),
@@ -102,4 +102,14 @@ void CommonPage::addMusicToPlayer(MusicList &musicList, QMediaPlaylist *playList
 
         }
     }
+}
+
+const QString &CommonPage::getMusicIdByIndex(int index) const
+{
+    if(index >= musicListOfPage.size())
+    {
+        qDebug() << "无此歌曲";
+        return "";
+    }
+    return  musicListOfPage[index];
 }

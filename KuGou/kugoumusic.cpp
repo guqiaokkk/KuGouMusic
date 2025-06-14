@@ -52,7 +52,8 @@ void KuGouMusic::initUI()
     ui->recent->setIconAndText(":/Image/recent.png", "最近播放", 5);
 
     ui->like->showAnimation();
-    ui->stackedWidget->setCurrentIndex(0);
+    ui->stackedWidget->setCurrentIndex(4);
+    nowType = "本地音乐";
 
     //RandomPicture();
     srand(time(NULL));
@@ -82,7 +83,7 @@ void KuGouMusic::connectSignalAndSlots()
     //connect(ui->likePage, &CommonPage::updatalikeMusic, ui->localPage, &DownPage::updatalikeMusic);
     connect(ui->likePage, &CommonPage::updatalikeMusic, this, &KuGouMusic::onUpdateLikeMusic);
     connect(ui->localPage, &DownPage::updatalikeMusic, this, &KuGouMusic::onUpdateLikeMusic);
-    //connect(ui->likePage, &RecentPage::updatalikeMusic, this, &KuGouMusic::onUpdateLikeMusic);
+    connect(ui->recentPage, &RecentPage::updatalikeMusic, this, &KuGouMusic::onUpdateLikeMusic);
 
     //暂停，启动
     connect(ui->play, &QPushButton::clicked, this, &KuGouMusic::onPlayCliked);
@@ -103,10 +104,15 @@ void KuGouMusic::connectSignalAndSlots()
         QString tmp = ui->localPage->typeName();
         playAllOfPage(tmp, 0);
     });
+    connect(ui->recentPage, &RecentPage::playAll, this, [=](){
+        QString tmp = ui->recentPage->typeName();
+        playAllOfPage(tmp, 0);
+    });
 
     //处理不同页面的双击
     connect(ui->likePage, &CommonPage::playMusicByIndex, this, &KuGouMusic::playMusicByIndex);
     connect(ui->localPage, &DownPage::playMusicByIndex, this, &KuGouMusic::playMusicByIndex);
+    connect(ui->recentPage, &RecentPage::playMusicByIndex, this, &KuGouMusic::playMusicByIndex);
 }
 
 void KuGouMusic::onUpdateLikeMusic(bool isLike, QString musicId)
@@ -119,7 +125,7 @@ void KuGouMusic::onUpdateLikeMusic(bool isLike, QString musicId)
     }
     ui->likePage->reFresh(musicList);
     ui->localPage->reFresh(musicList);
-    //ui->recentPage->reFresh();
+    ui->recentPage->reFresh(musicList);
 }
 
 void KuGouMusic::initPlayer()
@@ -141,6 +147,9 @@ void KuGouMusic::initPlayer()
 
     // 播放列表的模式放⽣改变时的信号槽关联
     connect(playlist, &QMediaPlaylist::playbackModeChanged, this, &KuGouMusic::onPlaybackModeChanged);
+
+    // 播放列表项发⽣改变，此时将播放⾳乐收藏到历史记录中
+    connect(playlist, &QMediaPlaylist::currentIndexChanged, this, &KuGouMusic::onCurrentIndexChanged);
 }
 
 void KuGouMusic::onPlayCliked()
@@ -240,11 +249,18 @@ void KuGouMusic::playAllOfPage(QString type, int index)
 
     if(type == "我喜欢")
     {
+        nowType = "我喜欢";
         ui->likePage->addMusicToPlayer(musicList, playlist);
     }
     else if(type == "本地音乐")
     {
+        nowType = "本地音乐";
         ui->localPage->addMusicToPlayer(musicList, playlist);
+    }
+    else if(type == "最近播放")
+    {
+        nowType = "最近播放";
+        ui->recentPage->addMusicToPlayer(musicList, playlist);
     }
 
     playlist->setCurrentIndex(index);
@@ -255,6 +271,32 @@ void KuGouMusic::playAllOfPage(QString type, int index)
 void KuGouMusic::playMusicByIndex(QString type, int index)
 {
     playAllOfPage(type, index);
+}
+
+void KuGouMusic::onCurrentIndexChanged(int index)
+{
+    if(index < 0)
+    {
+        return;
+    }
+
+    //从播放列表中获取媒体内容
+    QMediaContent content = playlist->media(index);
+    if(content.isNull()){
+        return;
+    }
+
+    //通过 URL 查找歌曲
+    Music *currentMusic = musicList.findMusicByUrl(content.canonicalUrl());
+
+    //标记歌曲为历史记录
+    if(currentMusic != nullptr)
+    {
+        currentMusic->setIsHistory(true);
+    }
+
+    //刷新“最近播放”页面
+    ui->recentPage->reFresh(musicList);
 }
 
 

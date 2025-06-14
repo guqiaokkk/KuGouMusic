@@ -27,6 +27,8 @@ public:
 
     void addMusicToPlayer(MusicList &musicList, QMediaPlaylist *playList);
 
+    const QString& getMusicIdByIndex(int index) const;
+
 signals:
     void updatalikeMusic(bool isLike, QString musicId);
 
