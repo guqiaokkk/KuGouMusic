@@ -29,6 +29,8 @@ public:
 
     const QString& getMusicIdByIndex(int index) const;
 
+    void setImageLabel(QPixmap pixmap);
+
 signals:
     void updatalikeMusic(bool isLike, QString musicId);
 

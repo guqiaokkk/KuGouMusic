@@ -97,7 +97,7 @@ void KuGouMusic::connectSignalAndSlots()
 
     //不同页面的playAll
     connect(ui->likePage, &CommonPage::playAll, this, [=](){
-        QString tmp = ui->localPage->typeName();
+        QString tmp = ui->likePage->typeName();
         playAllOfPage(tmp, 0);
     });
     connect(ui->localPage, &DownPage::playAll, this, [=](){
@@ -118,6 +118,15 @@ void KuGouMusic::connectSignalAndSlots()
     connect(volumeTool, &VolumeTool::setSilence, this, &KuGouMusic::setMusicSilence);
     // 设置⾳量⼤⼩
     connect(volumeTool, &VolumeTool::setMusicVolume, this, &KuGouMusic::setPlayerVolume);
+
+    // 媒体持续时⻓更新，即：⾳乐切换，时⻓更新，界⾯上时间也要更新
+    connect(player, &QMediaPlayer::durationChanged, this, &KuGouMusic::onDurationChanged);
+
+    // 播放位置发⽣改变，即已经播放时间更新
+    connect(player, &QMediaPlayer::positionChanged, this, &KuGouMusic::onPositionChanged);
+
+    //当playlist中播放源发生变化时
+    connect(player, &QMediaPlayer::metaDataAvailableChanged, this, &KuGouMusic::onMetaDataAvailableChangedChanged);
 }
 
 void KuGouMusic::onUpdateLikeMusic(bool isLike, QString musicId)
@@ -292,7 +301,7 @@ void KuGouMusic::onCurrentIndexChanged(int index)
     }
 
     //通过 URL 查找歌曲
-    Music *currentMusic = musicList.findMusicByUrl(content.canonicalUrl());
+    currentMusic = musicList.findMusicByUrl(content.canonicalUrl());
 
     //标记歌曲为历史记录
     if(currentMusic != nullptr)
@@ -312,6 +321,66 @@ void KuGouMusic::setMusicSilence(bool isMuted)
 void KuGouMusic::setPlayerVolume(int volume)
 {
     player->setVolume(volume);
+}
+
+void KuGouMusic::onDurationChanged(qint64 duration)
+{
+    ui->totalTime->setText(QString("%1:%2").arg(duration/1000/60, 2, 10, QChar('0'))
+                                             .arg(duration/1000%60, 2, 10, QChar('0')));
+}
+
+void KuGouMusic::onPositionChanged(qint64 duration)
+{
+    ui->currentTime->setText(QString("%1:%2").arg(duration/1000/60, 2, 10, QChar('0'))
+                             .arg(duration/1000%60, 2, 10, QChar('0')));
+}
+
+void KuGouMusic::onMetaDataAvailableChangedChanged(bool available)
+{
+    // 播放源改变
+     qDebug()<<"歌曲切换";
+
+     // 1. 从curretnMusic中获取歌曲信息
+     QString singer = currentMusic->getSingerName();
+     QString musicName = currentMusic->getMusicName();
+
+
+     // 2. 设置歌⼿、歌曲名称、专辑名称
+     ui->MusicName->setText(musicName);
+     ui->MusicSinger->setText(singer);
+
+     // 3. 获取封⾯图⽚
+     QVariant coverImage = player->metaData("ThumbnailImage");
+     if(coverImage.isValid())
+     {
+         // 获取封⾯图⽚成功
+         QImage image = coverImage.value<QImage>();
+
+         ui->MusicImage->setPixmap(QPixmap::fromImage(image));
+
+         // 缩放填充到整个Label
+         ui->MusicImage->setScaledContents(true);
+
+         if(currentMusic->getIsLike())
+         {
+             ui->likePage->setImageLabel(QPixmap::fromImage(image));
+         }
+     }
+     else
+     {
+         // coverImage 无效，或者转换出的图片为空。
+         // 这意味着当前播放的歌曲没有内嵌封面
+         qDebug() << "检测到新歌曲没有封面，设置为默认图片。";
+         QPixmap defaultPixmap(":/Image/KuGou.png");
+         ui->MusicImage->setPixmap(defaultPixmap);
+         ui->MusicImage->setScaledContents(true);
+        // 将“我喜欢”页面的封面重置为歌单的默认封面
+        if (currentMusic->getIsLike())
+        {
+          // 重置"我喜欢" 页面
+          ui->likePage->setCommonPageUi("我喜欢", ":/Image/KuGou.png");
+        }
+     }
 }
 
 

@@ -705,13 +705,13 @@ QPushButton:hover
               <property name="minimumSize">
                <size>
                 <width>0</width>
-                <height>30</height>
+                <height>20</height>
                </size>
               </property>
               <property name="maximumSize">
                <size>
                 <width>16777215</width>
-                <height>30</height>
+                <height>20</height>
                </size>
               </property>
               <property name="styleSheet">
@@ -754,29 +754,57 @@ QPushButton:hover
                  <property name="styleSheet">
                   <string notr="true"/>
                  </property>
-                 <layout class="QGridLayout" name="gridLayout">
-                  <item row="0" column="0" rowspan="2">
-                   <widget class="QLabel" name="MusicImage">
-                    <property name="text">
-                     <string>Text</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="1">
-                   <widget class="QLabel" name="MusicSinger">
-                    <property name="text">
-                     <string>歌手</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="1">
-                   <widget class="QLabel" name="MusicName">
-                    <property name="text">
-                     <string>歌名</string>
-                    </property>
-                   </widget>
-                  </item>
-                 </layout>
+                 <widget class="QLabel" name="MusicImage">
+                  <property name="geometry">
+                   <rect>
+                    <x>30</x>
+                    <y>5</y>
+                    <width>50</width>
+                    <height>50</height>
+                   </rect>
+                  </property>
+                  <property name="minimumSize">
+                   <size>
+                    <width>50</width>
+                    <height>50</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>50</width>
+                    <height>50</height>
+                   </size>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                 </widget>
+                 <widget class="QLabel" name="MusicSinger">
+                  <property name="geometry">
+                   <rect>
+                    <x>100</x>
+                    <y>30</y>
+                    <width>155</width>
+                    <height>25</height>
+                   </rect>
+                  </property>
+                  <property name="text">
+                   <string>歌手</string>
+                  </property>
+                 </widget>
+                 <widget class="QLabel" name="MusicName">
+                  <property name="geometry">
+                   <rect>
+                    <x>100</x>
+                    <y>5</y>
+                    <width>155</width>
+                    <height>25</height>
+                   </rect>
+                  </property>
+                  <property name="text">
+                   <string>歌名</string>
+                  </property>
+                 </widget>
                 </widget>
                </item>
                <item>

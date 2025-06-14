@@ -113,3 +113,9 @@ const QString &CommonPage::getMusicIdByIndex(int index) const
     }
     return  musicListOfPage[index];
 }
+
+void CommonPage::setImageLabel(QPixmap pixmap)
+{
+    ui->musicImageLabel->setPixmap(pixmap);
+    ui->musicImageLabel->setScaledContents(true);
+}
