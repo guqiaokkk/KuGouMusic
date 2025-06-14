@@ -90,7 +90,7 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QWidget" name="sliderBox" native="true">
+   <widget class="QWidget" name="volumeBox" native="true">
     <property name="geometry">
      <rect>
       <x>0</x>

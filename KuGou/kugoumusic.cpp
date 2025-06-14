@@ -113,6 +113,11 @@ void KuGouMusic::connectSignalAndSlots()
     connect(ui->likePage, &CommonPage::playMusicByIndex, this, &KuGouMusic::playMusicByIndex);
     connect(ui->localPage, &DownPage::playMusicByIndex, this, &KuGouMusic::playMusicByIndex);
     connect(ui->recentPage, &RecentPage::playMusicByIndex, this, &KuGouMusic::playMusicByIndex);
+
+    // 设置静⾳
+    connect(volumeTool, &VolumeTool::setSilence, this, &KuGouMusic::setMusicSilence);
+    // 设置⾳量⼤⼩
+    connect(volumeTool, &VolumeTool::setMusicVolume, this, &KuGouMusic::setPlayerVolume);
 }
 
 void KuGouMusic::onUpdateLikeMusic(bool isLike, QString musicId)
@@ -297,6 +302,16 @@ void KuGouMusic::onCurrentIndexChanged(int index)
 
     //刷新“最近播放”页面
     ui->recentPage->reFresh(musicList);
+}
+
+void KuGouMusic::setMusicSilence(bool isMuted)
+{
+    player->setMuted(isMuted);
+}
+
+void KuGouMusic::setPlayerVolume(int volume)
+{
+    player->setVolume(volume);
 }
 
 

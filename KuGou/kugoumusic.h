@@ -39,11 +39,15 @@ public:
 
     void onPlaybackModeChanged(QMediaPlaylist::PlaybackMode playbackMode);// 播放模式切换槽函数
 
-    void playAllOfPage(QString type, int index);
-
+    void playAllOfPage(QString type, int index); //根据type来播放对于type页面的所有歌曲
     void playMusicByIndex(QString type, int index);
 
-    void onCurrentIndexChanged(int index);
+    void onCurrentIndexChanged(int index);//实现最近播放
+
+    // VolumeTool类中setMusicMuted信号对应的槽函数
+    void setMusicSilence(bool isMuted);
+
+    void setPlayerVolume(int volume);// 设置⾳量⼤⼩
 
 private slots:
     void on_quit_clicked();
