@@ -3,6 +3,12 @@
 #include <QMediaPlayer>
 #include <QCoreApplication>
 
+#include <QFileInfo>
+#include <QDir>
+#include <QRegularExpression>
+#include <algorithm> // for std::remove_if
+
+
 
 Music::Music(const QUrl &url)
      : isLike(false)
@@ -91,6 +97,76 @@ QUrl Music::getMusicUrl()
 QString Music::getMusicId()
 {
     return musicId;
+}
+
+QString Music::getLrcFilePath() const
+{
+    // ⾳频⽂件和LRC⽂件在⼀个⽂件夹下. （这里也可以歌曲放在一个文件夹，歌词放在一个文件夹）
+    // 直接将⾳频⽂件的后缀替换为.lrc
+    QFileInfo musicFileInfo(musicUrl.toLocalFile());
+        QDir musicDir = musicFileInfo.dir();
+        QString musicBaseName = musicFileInfo.baseName(); // e.g., "血纯茗雅 - 光与信仰"
+
+        // --- 查找策略 1: 基于关键词的模糊匹配 (最强大) ---
+        // 1.1 提取关键词
+        // 使用正则表达式按空格或-分割，并去除空字符串
+        QRegularExpression separator("[\\s-]+");
+        QStringList keywords = musicBaseName.split(separator, Qt::SkipEmptyParts);
+
+        // 1.2 移除太短的关键词，避免误判 (比如 "a", "of" 等)
+        keywords.erase(std::remove_if(keywords.begin(), keywords.end(),
+                                      [](const QString& s) { return s.length() < 2; }),
+                       keywords.end());
+
+        if (!keywords.isEmpty())
+        {
+            // 1.3 获取目录下所有的.lrc文件
+            QStringList allLrcFiles = musicDir.entryList(QStringList() << "*.lrc", QDir::Files);
+
+            // 1.4 遍历所有lrc文件，寻找包含所有关键词的那个
+            for (const QString& lrcFileName : allLrcFiles)
+            {
+                bool allKeywordsMatch = true;
+                for (const QString& keyword : keywords)
+                {
+                    // 使用不区分大小写的包含检查，更健壮
+                    if (!lrcFileName.contains(keyword, Qt::CaseInsensitive))
+                    {
+                        allKeywordsMatch = false;
+                        break; // 只要有一个关键词不匹配，就检查下一个lrc文件
+                    }
+                }
+
+                if (allKeywordsMatch)
+                {
+                    // 找到了！这个lrc文件包含了所有关键词
+                    qDebug() << "关键词匹配成功:" << lrcFileName;
+                    return musicDir.filePath(lrcFileName);
+                }
+            }
+        }
+
+
+        // --- 查找策略 2: 前缀匹配 (上一版的方案，作为备用) ---
+        QStringList filters;
+        filters << musicBaseName + "*.lrc";
+        QStringList lrcFiles = musicDir.entryList(filters, QDir::Files);
+        if (!lrcFiles.isEmpty())
+        {
+            qDebug() << "前缀匹配成功:" << lrcFiles.first();
+            return musicDir.filePath(lrcFiles.first());
+        }
+
+        // --- 查找策略 3: 精确匹配 (最原始的方案，作为最后防线) ---
+        QString exactMatchPath = musicDir.filePath(musicBaseName + ".lrc");
+        if (QFile::exists(exactMatchPath)) {
+            qDebug() << "精确匹配成功:" << exactMatchPath;
+            return exactMatchPath;
+        }
+
+        // 如果所有方法都失败了，就返回空字符串
+        qDebug() << "所有歌词匹配策略均失败，未找到歌词文件。";
+        return QString();
 }
 
 void Music::parseMediaMetaData()

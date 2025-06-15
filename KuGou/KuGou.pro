@@ -20,6 +20,7 @@ SOURCES += \
     commonpage.cpp \
     downpage.cpp \
     listitembox.cpp \
+    lrcpage.cpp \
     main.cpp \
     kugoumusic.cpp \
     music.cpp \
@@ -36,6 +37,7 @@ HEADERS += \
     downpage.h \
     kugoumusic.h \
     listitembox.h \
+    lrcpage.h \
     music.h \
     musiclist.h \
     musicslider.h \
@@ -50,6 +52,7 @@ FORMS += \
     downpage.ui \
     kugoumusic.ui \
     listitembox.ui \
+    lrcpage.ui \
     musicslider.ui \
     recbox.ui \
     recboxitem.ui \

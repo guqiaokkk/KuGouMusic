@@ -68,6 +68,16 @@ void KuGouMusic::initUI()
 
     ui->play->setIcon(QIcon(":/Image/musicstop.png"));  // 默认为暂停图标
     ui->playMode->setIcon(QIcon(":/Image/shuffle.png"));// 默认为随机播放
+
+    // 创建lrc歌词窗⼝
+    lrcPage = new LrcPage(this);
+    lrcPage->hide();
+
+    // lrcPage添加动画效果
+    lrcAnimation = new QPropertyAnimation(lrcPage, "geometry", this);
+    lrcAnimation->setDuration(500);
+    lrcAnimation->setStartValue(QRect(15, 15 + lrcPage->height(), lrcPage->width(), lrcPage->height()));
+    lrcAnimation->setEndValue(QRect(15, 15, lrcPage->width(), lrcPage->height()));
 }
 
 void KuGouMusic::connectSignalAndSlots()
@@ -127,6 +137,9 @@ void KuGouMusic::connectSignalAndSlots()
 
     //当playlist中播放源发生变化时
     connect(player, &QMediaPlayer::metaDataAvailableChanged, this, &KuGouMusic::onMetaDataAvailableChangedChanged);
+
+    // 显⽰歌词窗⼝
+    connect(ui->lrcWord, &QPushButton::clicked, this, &KuGouMusic::onLrcWordClicked);
 }
 
 void KuGouMusic::onUpdateLikeMusic(bool isLike, QString musicId)
@@ -331,8 +344,17 @@ void KuGouMusic::onDurationChanged(qint64 duration)
 
 void KuGouMusic::onPositionChanged(qint64 duration)
 {
+    // 1. 更新当前播放时间
     ui->currentTime->setText(QString("%1:%2").arg(duration/1000/60, 2, 10, QChar('0'))
                              .arg(duration/1000%60, 2, 10, QChar('0')));
+
+    // 2. 更新进度条的位置
+
+    // 3. 同步lrc歌词
+    if(currentMusic)
+    {
+        lrcPage->showLrcWord(duration);
+    }
 }
 
 void KuGouMusic::onMetaDataAvailableChangedChanged(bool available)
@@ -361,6 +383,9 @@ void KuGouMusic::onMetaDataAvailableChangedChanged(bool available)
          // 缩放填充到整个Label
          ui->MusicImage->setScaledContents(true);
 
+         QPixmap coverPixmap = QPixmap::fromImage(image);
+         lrcPage->setAlbumCover(coverPixmap);
+
          if(currentMusic->getIsLike())
          {
              ui->likePage->setImageLabel(QPixmap::fromImage(image));
@@ -374,6 +399,9 @@ void KuGouMusic::onMetaDataAvailableChangedChanged(bool available)
          QPixmap defaultPixmap(":/Image/KuGou.png");
          ui->MusicImage->setPixmap(defaultPixmap);
          ui->MusicImage->setScaledContents(true);
+
+         lrcPage->setAlbumCover(defaultPixmap);
+
         // 将“我喜欢”页面的封面重置为歌单的默认封面
         if (currentMusic->getIsLike())
         {
@@ -381,6 +409,19 @@ void KuGouMusic::onMetaDataAvailableChangedChanged(bool available)
           ui->likePage->setCommonPageUi("我喜欢", ":/Image/KuGou.png");
         }
      }
+
+     // 加载lrc歌词并解析
+     if(currentMusic)
+     {
+         lrcPage->parseLrc(currentMusic->getLrcFilePath());
+     }
+}
+
+void KuGouMusic::onLrcWordClicked()
+{
+    // 显⽰窗⼝ 并 开启动画
+    lrcPage->show();
+    lrcAnimation->start();
 }
 
 

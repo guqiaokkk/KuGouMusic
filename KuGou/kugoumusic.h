@@ -2,12 +2,13 @@
 #define KUGOUMUSIC_H
 #include "volumetool.h"
 #include "musiclist.h"
-
+#include "lrcpage.h"
 
 
 #include <QWidget>
 #include <QMediaPlayer>
 #include <QMediaPlaylist>
+#include <QPropertyAnimation>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class KuGouMusic; }
@@ -67,6 +68,8 @@ private slots:
 
     void onMetaDataAvailableChangedChanged(bool available); //当歌曲更换时，完成信息的更新
 
+    void onLrcWordClicked();
+
 protected:
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
@@ -87,5 +90,8 @@ private:
     QString nowType; //标识当前页面
 
     Music *currentMusic;//当前歌曲
+
+    LrcPage *lrcPage;
+    QPropertyAnimation *lrcAnimation;
 };
 #endif // KUGOUMUSIC_H
