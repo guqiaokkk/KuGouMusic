@@ -12,6 +12,8 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QSqlQuery>
+#include <QSystemTrayIcon>
+#include <QMenu>
 
 
 KuGouMusic::KuGouMusic(QWidget *parent)
@@ -56,6 +58,24 @@ void KuGouMusic::initUI()
     shadowEffect->setBlurRadius(10);         // 设置阴影的模糊半径
     ui->background->setGraphicsEffect(shadowEffect);
 
+    // 添加托盘
+    // 创建托盘图标
+    QSystemTrayIcon *trayIcon = new QSystemTrayIcon(this);
+    trayIcon->setIcon(QIcon(":/Image/KuGou.png"));
+
+    // 创建托盘菜单
+    QMenu *trayMenu = new QMenu(this);
+    trayMenu->addAction("还原", this, &QWidget::showNormal);
+    trayMenu->addSeparator();
+    trayMenu->addAction("退出", this, &KuGouMusic::quitKuGouMusic);
+
+    // 将托盘菜单添加到托盘图标
+    trayIcon->setContextMenu(trayMenu);
+
+    // 显⽰托盘
+    trayIcon->show();
+
+
     // 设置BtForm图标 & 文本信息
     ui->rec->setIconAndText(":/Image/rec.png", "推荐", 0);
     ui->radio->setIconAndText(":/Image/radio.png", "电台", 1);
@@ -91,6 +111,7 @@ void KuGouMusic::initUI()
     lrcAnimation->setDuration(500);
     lrcAnimation->setStartValue(QRect(15, 15 + lrcPage->height(), lrcPage->width(), lrcPage->height()));
     lrcAnimation->setEndValue(QRect(15, 15, lrcPage->width(), lrcPage->height()));
+
 }
 
 void KuGouMusic::connectSignalAndSlots()
@@ -513,6 +534,20 @@ void KuGouMusic::onPositionChanged(qint64 duration)
     }
 }
 
+void KuGouMusic::quitKuGouMusic()
+{
+   // 歌曲信息写⼊数据库
+   musicList.writeToDB();
+
+   // 断开与SQLite的链接
+   sqlite.close();
+
+   // 关闭窗⼝
+   close();
+}
+
+
+
 void KuGouMusic::onSliderPositionChanged(float value)
 {
     // 此函数只在鼠标释放后被调用一次，所以可以安全地设置播放器位置
@@ -604,14 +639,7 @@ void KuGouMusic::onLrcWordClicked()
 
 void KuGouMusic::on_quit_clicked()
 {
-    // 更新数据库
-    musicList.writeToDB();
-
-    // 关闭数据库连接
-    sqlite.close();
-
-    // 关闭窗⼝
-    close();
+   hide();
 }
 
 void KuGouMusic::onBtFromClick(int pageId)

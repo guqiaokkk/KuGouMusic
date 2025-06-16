@@ -71,6 +71,8 @@ private slots:
 
     void onPositionChanged(qint64 duration);// 播放位置改变，即持续播放时间改变
 
+    void quitKuGouMusic();
+
     // 进度条相关的槽函数
     void onSliderPositionChanged(float value);
     void onSliderPressed();
