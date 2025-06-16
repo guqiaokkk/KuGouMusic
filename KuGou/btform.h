@@ -24,6 +24,12 @@ public:
 
     void showAnimation();
 
+    void hideAnimation(); // 隐藏动画的函数
+
+    void pauseAnimation();   // 暂停动画的函数
+
+    void resumeAnimation();  // 恢复动画的函数
+
 protected:
     virtual void mousePressEvent(QMouseEvent *event);
 

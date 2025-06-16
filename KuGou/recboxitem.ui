@@ -75,6 +75,8 @@
        <string/>
       </property>
      </widget>
+     <zorder>recMusicBtn</zorder>
+     <zorder>recMusicImage</zorder>
     </widget>
    </item>
    <item>

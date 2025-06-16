@@ -13,10 +13,35 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QFrame" name="outLine">
+  <widget class="QWidget" name="inLine" native="true">
    <property name="geometry">
     <rect>
-     <x>10</x>
+     <x>0</x>
+     <y>8</y>
+     <width>830</width>
+     <height>4</height>
+    </rect>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>830</width>
+     <height>4</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>830</width>
+     <height>4</height>
+    </size>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color: #E0E0E0;</string>
+   </property>
+  </widget>
+  <widget class="QWidget" name="outLine" native="true">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
      <y>8</y>
      <width>800</width>
      <height>4</height>
@@ -35,54 +60,9 @@
     </size>
    </property>
    <property name="styleSheet">
-    <string notr="true">#outLine
-{
- background-color:#1ECC94;
-}</string>
-   </property>
-   <property name="frameShape">
-    <enum>QFrame::StyledPanel</enum>
-   </property>
-   <property name="frameShadow">
-    <enum>QFrame::Raised</enum>
+    <string notr="true">background-color: rgb(30, 206, 154);</string>
    </property>
   </widget>
-  <widget class="QFrame" name="inLine">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>8</y>
-     <width>800</width>
-     <height>4</height>
-    </rect>
-   </property>
-   <property name="minimumSize">
-    <size>
-     <width>800</width>
-     <height>4</height>
-    </size>
-   </property>
-   <property name="maximumSize">
-    <size>
-     <width>800</width>
-     <height>4</height>
-    </size>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">#inLine
-{
- background-color:#EBEEF5;
-}</string>
-   </property>
-   <property name="frameShape">
-    <enum>QFrame::StyledPanel</enum>
-   </property>
-   <property name="frameShadow">
-    <enum>QFrame::Raised</enum>
-   </property>
-  </widget>
-  <zorder>inLine</zorder>
-  <zorder>outLine</zorder>
  </widget>
  <resources/>
  <connections/>

@@ -6,6 +6,9 @@
 #include <QVector>
 #include <QUrl>
 
+#include <QSet>
+
+
 typedef typename QVector<Music>::iterator iterator;
 
 class MusicList
@@ -26,6 +29,10 @@ public:
 
 private:
     QVector<Music> musicList;
+
+    //歌曲的路径保存(同⼀个电脑上，⽂件路径不可能重复)，在进⾏歌曲加载时，先检测歌曲⽂件是否存在，如果不存在则添加否则不添加
+    QSet<QString> musicPaths;
+
 };
 
 #endif // MUSICLIST_H

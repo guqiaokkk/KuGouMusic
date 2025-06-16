@@ -82,7 +82,39 @@ int btForm::getId()
 
 void btForm::showAnimation()
 {
+    // showAnimation 现在也兼具 resume 的功能
+    // 如果动画已经是运行状态，调用resume没效果，正好符合我们的需求
     ui->lineBox->show();
+    resumeAnimation();
+}
+
+void btForm::hideAnimation()
+{
+    ui->lineBox->hide();
+
+    // 停止动画会让它回到初始状态，这时隐藏
+    animationLine1->stop();
+    animationLine2->stop();
+    animationLine3->stop();
+    animationLine4->stop();
+}
+
+void btForm::pauseAnimation()
+{
+    // 调用 QPropertyAnimation 的 pause 方法
+    animationLine1->pause();
+    animationLine2->pause();
+    animationLine3->pause();
+    animationLine4->pause();
+}
+
+void btForm::resumeAnimation()
+{
+    // 调用 QPropertyAnimation 的 resume 方法
+    animationLine1->start();
+    animationLine2->start();
+    animationLine3->start();
+    animationLine4->start();
 }
 
 void btForm::mousePressEvent(QMouseEvent *event)

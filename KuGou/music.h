@@ -32,8 +32,14 @@ public:
 
     void insertMusicToDB();
 
+    //歌词相关
+    void setLrcPath(const QString &path);
+    QString getLrcPath() const;
+
 private:
     void parseMediaMetaData();
+
+     void findAndSetLrcPath(); //lrc搜寻， 在构造时调用，查找并设置歌词路径
 
 private:
     bool isLike;
@@ -50,6 +56,8 @@ private:
 
     //音乐在磁盘的位置
     QUrl musicUrl;
+
+     QString lrcPath; //歌词的文件地址
 };
 
 #endif // MUSIC_H

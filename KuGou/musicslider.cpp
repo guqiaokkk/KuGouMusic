@@ -8,12 +8,15 @@ MusicSlider::MusicSlider(QWidget *parent) :
     ui(new Ui::MusicSlider)
 {
     ui->setupUi(this);
+    ui->outLine->raise();
+
 
     // 初始情况下，还没有开始播放，将当前播放进度设置为0
-    currentPos = 0;
-    maxWidth = this->width();
-
-    moveSilder();
+    currentPos = 0;   
+    maxWidth = 0;
+    // 初始时，让前景条宽度为0
+    ui->outLine->setFixedWidth(0);
+    updateSliderPosition();
 }
 
 MusicSlider::~MusicSlider()
@@ -21,25 +24,57 @@ MusicSlider::~MusicSlider()
     delete ui;
 }
 
+// 外部调用此函数来设置进度
+void MusicSlider::setPosition(float percent)
+{
+    // 如果控件还没正确显示，maxWidth可能为0
+    if (maxWidth <= 0) return;
+
+    // 如果是100%，确保 currentPos 就是 width()
+        if (qFuzzyCompare(percent, 1.0f)) {
+            currentPos = this->width();
+        } else {
+            currentPos = static_cast<int>(qBound(0.0f, percent, 1.0f) * this->width());
+        }
+    updateSliderPosition();
+}
+
+
 void MusicSlider::mousePressEvent(QMouseEvent *event)
 {
+    emit sliderPressed();  //  发射按下信号
+
     //QMouseEvent中的pos()为⿏标相对于widget的坐标，不是相当于screen
     currentPos = event->pos().x();
-    moveSilder();
+    updateSliderPosition();
+
 }
 
 void MusicSlider::mouseReleaseEvent(QMouseEvent *event)
 {
-    currentPos = event->pos().x();
-    moveSilder();
+    (void)event;
+    float percent = 0.0f;
+    // 只有在释放鼠标时，才把最终的位置百分比发射出去
+    if (maxWidth > 0) {
+        // 我们不直接用 currentPos，而是再做一次校准
+                int sliderHandleRadius = 5; // 假设滑块半径为5px
 
-    emit setMusicSliderPosition((float)currentPos / (float)maxWidth);
+                // 如果用户拖得非常靠右（在终点附近的一个半径内），我们就强制认为是100%
+                if (currentPos >= this->width() - sliderHandleRadius) {
+                    percent = 1.0f;
+                } else {
+                    percent = (float)currentPos / (float)this->width();
+                }
+     }
+
+     emit positionChanged(percent);
+     emit sliderReleased(); // 通知主窗口：拖拽结束
 }
 
 void MusicSlider::mouseMoveEvent(QMouseEvent *event)
 {
     // 如果⿏标不在MusicSlider的矩形内，不进⾏拖拽
-    QRect rect = QRect(0, 0, geometry().width(), geometry().height());
+    QRect rect = QRect(0, 0, width(), height());
     QPoint pos = event->pos();
     if(!rect.contains(pos))
     {
@@ -58,13 +93,20 @@ void MusicSlider::mouseMoveEvent(QMouseEvent *event)
         {
             currentPos = maxWidth;
         }
-        moveSilder();
+        updateSliderPosition();
     }
 }
 
-void MusicSlider::moveSilder()
+// 控件大小改变
+void MusicSlider::resizeEvent(QResizeEvent *event)
 {
-    // 根据当前进度设置外部滑动条的位置
+    // 实时更新控件的最大宽度
+        maxWidth = event->size().width();
+        QWidget::resizeEvent(event); // 调用父类的实现
+}
 
-    ui->outLine->setGeometry(ui->outLine->x(), ui->outLine->y(), currentPos, ui->outLine->height());//x 坐标：0 y 坐标：8 宽度：currentPos  高度：4
+void MusicSlider::updateSliderPosition()
+{
+    // 使用setGeometry来设置outLine的宽度
+     ui->outLine->setFixedWidth(currentPos);
 }

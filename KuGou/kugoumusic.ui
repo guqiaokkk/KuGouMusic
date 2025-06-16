@@ -566,7 +566,7 @@ QPushButton:hover
             <item>
              <widget class="QStackedWidget" name="stackedWidget">
               <property name="currentIndex">
-               <number>5</number>
+               <number>0</number>
               </property>
               <widget class="QWidget" name="recPage">
                <widget class="QScrollArea" name="scrollArea">
@@ -579,7 +579,17 @@ QPushButton:hover
                  </rect>
                 </property>
                 <property name="styleSheet">
-                 <string notr="true">border: none;</string>
+                 <string notr="true">QScrollArea { border: none; }
+QScrollBar:vertical {
+border:none;
+width: 10px;
+background-color:#F0F0F0;margin: 0px0px0px0px;
+}
+QScrollBar::handle:vertical {
+width:10px;
+background-color:#E3E3E3;border-radius:5px;
+min-height: 20px;
+}</string>
                 </property>
                 <property name="widgetResizable">
                  <bool>true</bool>
@@ -592,6 +602,9 @@ QPushButton:hover
                    <width>830</width>
                    <height>500</height>
                   </rect>
+                 </property>
+                 <property name="styleSheet">
+                  <string notr="true"/>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout">
                   <item>
@@ -668,7 +681,7 @@ QPushButton:hover
                      </font>
                     </property>
                     <property name="text">
-                     <string>TextLabel</string>
+                     <string>音乐补给站</string>
                     </property>
                    </widget>
                   </item>
@@ -987,6 +1000,9 @@ QPushButton:hover
                   <string notr="true"/>
                  </property>
                  <layout class="QHBoxLayout" name="horizontalLayout_9">
+                  <property name="rightMargin">
+                   <number>20</number>
+                  </property>
                   <item>
                    <widget class="QLabel" name="labelNull">
                     <property name="text">
@@ -1038,18 +1054,19 @@ QPushButton:hover
                     <property name="styleSheet">
                      <string notr="true">#lrcWord
 {
-	border: none;
-	background-repeat: no-repeat;
-	background-position: center center;
-	padding-right : 15px;
+ border:none;
+ background-image:url(:/Image/lrclines.png);
+ background-repeat:no-repeat;
+ background-position: center center;
+
 }
-QPushButton:hover
+#lrcWord:hover
 {
-	background-color: rgba(220,220,220,0.5);
+ background-color:rgba(220, 220, 220, 0.5);
 }</string>
                     </property>
                     <property name="text">
-                     <string>词</string>
+                     <string/>
                     </property>
                    </widget>
                   </item>

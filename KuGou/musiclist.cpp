@@ -16,6 +16,16 @@ void MusicList::addMusicByUrl(const QList<QUrl> &urls)
 {
   for(auto musicUrl : urls)
   {
+      QString musicPath = musicUrl.toLocalFile();
+      // 检测歌曲是否存在，如果在就不添加
+      if(musicPaths.contains(musicPath))
+      {
+          continue;
+      }
+
+      // 歌曲还没有加载过，将其解析并添加到歌曲列表
+      musicPaths.insert(musicPath);
+
       // 由于添加进来的⽂件不⼀定是歌曲⽂件，因此需要再次筛选出⾳乐⽂件
       QMimeDatabase db;
       QMimeType mime = db.mimeTypeForUrl(musicUrl.toLocalFile());
@@ -76,7 +86,7 @@ void MusicList::writeToDB()
 void MusicList::readFromDB()
 {
     QString sql("SELECT musicId, musicName, singerName, albumName,\
-                        duration, musicUrl, isLike, isHistory \
+                        duration, musicUrl, lrcPath, isLike, isHistory \
                  From musicInfo");
 
     QSqlQuery query;
@@ -94,10 +104,13 @@ void MusicList::readFromDB()
         music.setSingerName(query.value(2).toString());
         music.setAlbumName(query.value(3).toString());
         music.setDuration(query.value(4).toLongLong());
-        music.setMusicUrl(query.value(5).toString());
-        music.setIsLike(query.value(6).toBool());
-        music.setIsHistory(query.value(7).toBool());
+        music.setMusicUrl("file:///" + query.value(5).toString());
+        music.setLrcPath(query.value(6).toString());
+        music.setIsLike(query.value(7).toBool());
+        music.setIsHistory(query.value(8).toBool());
 
         musicList.push_back(music);
+
+        musicPaths.insert(music.getMusicUrl().toLocalFile());
     }
 }

@@ -36,6 +36,9 @@ public:
 
     void initMusicList();
 
+private:
+    void updatePlayingBtFormAnimation();
+
 private slots:
     void on_quit_clicked();
 
@@ -68,7 +71,10 @@ private slots:
 
     void onPositionChanged(qint64 duration);// 播放位置改变，即持续播放时间改变
 
-
+    // 进度条相关的槽函数
+    void onSliderPositionChanged(float value);
+    void onSliderPressed();
+    void onSliderReleased();
 
 
     void onMetaDataAvailableChangedChanged(bool available); //当歌曲更换时，完成信息的更新
@@ -76,6 +82,10 @@ private slots:
     void onLrcWordClicked();
 
 
+
+    void on_min_clicked();
+
+    void on_max_clicked();
 
 protected:
     void mousePressEvent(QMouseEvent *event);
@@ -98,11 +108,15 @@ private:
 
     Music *currentMusic;//当前歌曲
 
+    qint64 totalTime;  // 记录媒体源的总时间
+    bool isSliderDragging; // 记录用户是否正在拖拽进度条
 
     LrcPage *lrcPage; //歌词界面
     QPropertyAnimation *lrcAnimation; //歌词界面相关的动画
 
     QSqlDatabase sqlite;
+
+    bool isDrag; // 为true时候窗⼝才能拖拽
 
 };
 #endif // KUGOUMUSIC_H

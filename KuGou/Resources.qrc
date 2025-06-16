@@ -66,5 +66,6 @@
         <file>Image/oneSong.png</file>
         <file>Image/besilence.png</file>
         <file>Image/silence.png</file>
+        <file>Image/lrclines.png</file>
     </qresource>
 </RCC>

@@ -17,6 +17,7 @@
 KuGouMusic::KuGouMusic(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::KuGouMusic)
+    , isSliderDragging(false)
 {
     ui->setupUi(this);
     initUI();
@@ -44,6 +45,9 @@ void KuGouMusic::initUI()
 
     // 设置窗⼝背景透明
     setAttribute(Qt::WA_TranslucentBackground);
+
+    // 设置主窗⼝图标
+    setWindowIcon(QIcon(":/Image/KuGou.png"));
 
     // 给窗⼝设置阴影效果
     QGraphicsDropShadowEffect *shadowEffect = new QGraphicsDropShadowEffect(this);
@@ -147,6 +151,14 @@ void KuGouMusic::connectSignalAndSlots()
     //当playlist中播放源发生变化时
     connect(player, &QMediaPlayer::metaDataAvailableChanged, this, &KuGouMusic::onMetaDataAvailableChangedChanged);
 
+    //进度条相关连接
+    // 1. 当 MusicSlider 报告位置变化时（仅在鼠标释放后），我们去改变播放器位置
+    connect(ui->ProcessBar, &MusicSlider::positionChanged, this, &KuGouMusic::onSliderPositionChanged);
+    // 2. 当 MusicSlider 报告被按下时，我们记录下拖拽状态
+    connect(ui->ProcessBar, &MusicSlider::sliderPressed, this, &KuGouMusic::onSliderPressed);
+    // 3. 当 MusicSlider 报告被释放时，我们也记录下拖拽状态
+    connect(ui->ProcessBar, &MusicSlider::sliderReleased, this, &KuGouMusic::onSliderReleased);
+
     // 显⽰歌词窗⼝
     connect(ui->lrcWord, &QPushButton::clicked, this, &KuGouMusic::onLrcWordClicked);
 }
@@ -213,6 +225,7 @@ void KuGouMusic::initSQLite()
                     albumName varchar(50),\
                     duration BIGINT,\
                     musicUrl varchar(256),\
+                    lrcPath varchar(256),\
                     isLike INTEGER,\
                     isHistory INTEGER)");
 
@@ -224,6 +237,18 @@ void KuGouMusic::initSQLite()
     }
     qDebug()<<"创建 KuGou表成功!!!";
 
+    //检查并添加 lrcPath 字段
+    if (!query.exec("SELECT lrcPath FROM musicInfo LIMIT 1"))
+    {
+
+        if (!query.exec("ALTER TABLE musicInfo ADD COLUMN lrcPath varchar(256)")) {
+               QMessageBox::critical(this, "KuGouMusic", "lrcPath字段出错");
+            }
+        else
+        {
+                qDebug() << "lrc文件地址添加成功！";
+        }
+     }
 }
 
 void KuGouMusic::initMusicList()
@@ -235,6 +260,36 @@ void KuGouMusic::initMusicList()
     ui->likePage->reFresh(musicList);
     ui->localPage->reFresh(musicList);
     ui->recentPage->reFresh(musicList);
+}
+
+void KuGouMusic::updatePlayingBtFormAnimation()
+{
+    // 1. 获取所有的 btForm 控件
+    QList<btForm*> allBtForms = this->findChildren<btForm*>();
+
+    // 2. 遍历所有 btForm
+    for(btForm* form : allBtForms)
+    {
+        // 3. 根据 nowType 判断是否是当前正在播放的列表对应的 btForm
+        bool shouldShow = false;
+        switch(form->getId())
+        {
+          case 3: if (nowType == "我喜欢") shouldShow = true; break;// 我喜欢
+          case 4: if (nowType == "本地音乐") shouldShow = true;break;// 本地音乐
+          case 5: if (nowType == "最近播放") shouldShow = true;break;// 最近播放
+          // 根据需要添加其他页面的 case
+          default:break;
+         }
+         // 4. 根据判断结果，显示或隐藏动画
+         if (shouldShow)
+         {
+            form->showAnimation();
+         }
+         else
+         {
+            form->hideAnimation();
+         }
+    }
 }
 
 void KuGouMusic::onPlayCliked()
@@ -258,16 +313,35 @@ void KuGouMusic::onPlayCliked()
 
 void KuGouMusic::onPlayStateChanged()
 {
+    QList<btForm*> allBtForms = this->findChildren<btForm*>();
     if(player->state() == QMediaPlayer::PlayingState)
     {
         // 播放状态
         ui->play->setIcon(QIcon(":/Image/stop.png"));
+        // 开始播放时，确保动画是正确的状态
+        updatePlayingBtFormAnimation();
     }
-    else
+    else if (player->state() == QMediaPlayer::PausedState)
     {
         // 暂停状态
         ui->play->setIcon(QIcon(":/Image/musicstop.png"));
+
+        // 遍历所有btForm，并暂停它们的动画
+        for(btForm* form : allBtForms)
+        {
+            form->pauseAnimation();
+        }
     }
+    else // StoppedState
+    {
+         // 停止状态
+         ui->play->setIcon(QIcon(":/Image/musicstop.png"));
+         // 停止时，我们希望所有动画都消失
+         for (btForm* form : allBtForms)
+         {
+            form->hideAnimation();
+         }
+     }
 }
 
 void KuGouMusic::onPlayUpClicked()
@@ -347,6 +421,13 @@ void KuGouMusic::playAllOfPage(QString type, int index)
         nowType = "最近播放";
         ui->recentPage->addMusicToPlayer(musicList, playlist);
     }
+    else
+    {
+        nowType = "";
+    }
+
+    // 在改变了 nowType 之后，立即更新动画状态
+    updatePlayingBtFormAnimation();
 
     playlist->setCurrentIndex(index);
 
@@ -396,17 +477,34 @@ void KuGouMusic::setPlayerVolume(int volume)
 
 void KuGouMusic::onDurationChanged(qint64 duration)
 {
+    // duration为歌曲的总时长,单位为毫秒
+    totalTime = duration;
+
     ui->totalTime->setText(QString("%1:%2").arg(duration/1000/60, 2, 10, QChar('0'))
                                              .arg(duration/1000%60, 2, 10, QChar('0')));
 }
 
 void KuGouMusic::onPositionChanged(qint64 duration)
 {
+
+    // 如果用户正在拖拽，则忽略来自播放器的所有UI更新请求
+        if (isSliderDragging) {
+            return;
+        }
     // 1. 更新当前播放时间
     ui->currentTime->setText(QString("%1:%2").arg(duration/1000/60, 2, 10, QChar('0'))
                              .arg(duration/1000%60, 2, 10, QChar('0')));
 
     // 2. 更新进度条的位置
+    if (totalTime > 0)
+    {
+       float percent = (float)duration / totalTime;
+       ui->ProcessBar->setPosition(percent);
+    }
+    else
+    {
+       ui->ProcessBar->setPosition(0.0f);
+    }
 
     // 3. 同步lrc歌词
     if(currentMusic)
@@ -414,6 +512,27 @@ void KuGouMusic::onPositionChanged(qint64 duration)
         lrcPage->showLrcWord(duration);
     }
 }
+
+void KuGouMusic::onSliderPositionChanged(float value)
+{
+    // 此函数只在鼠标释放后被调用一次，所以可以安全地设置播放器位置
+    if (totalTime > 0)
+    {
+         qint64 position = static_cast<qint64>(totalTime * value);
+         player->setPosition(position);
+    }
+}
+
+void KuGouMusic::onSliderPressed()
+{
+     isSliderDragging = true;
+}
+
+void KuGouMusic::onSliderReleased()
+{
+    isSliderDragging = false;
+}
+
 
 void KuGouMusic::onMetaDataAvailableChangedChanged(bool available)
 {
@@ -471,7 +590,7 @@ void KuGouMusic::onMetaDataAvailableChangedChanged(bool available)
      // 加载lrc歌词并解析
      if(currentMusic)
      {
-         lrcPage->parseLrc(currentMusic->getLrcFilePath());
+         lrcPage->parseLrc(currentMusic->getLrcPath());
      }
 }
 
@@ -511,12 +630,16 @@ void KuGouMusic::onBtFromClick(int pageId)
     ui->stackedWidget->setCurrentIndex(pageId);
     qDebug() << "change page";
 
+    // 点击btForm时，窗⼝不能拖拽
+    isDrag = false;
+
 }
 
 void KuGouMusic::mousePressEvent(QMouseEvent *event)
 {
-    if(event->button() == Qt::LeftButton)
+    if(event->button() == Qt::LeftButton )
     {
+        isDrag = true;
         //计算鼠标按下时，鼠标相对于窗口左上角的偏移量
         dragPosition = event->globalPos() - frameGeometry().topLeft();
         return;
@@ -526,7 +649,7 @@ void KuGouMusic::mousePressEvent(QMouseEvent *event)
 
 void KuGouMusic::mouseMoveEvent(QMouseEvent *event)
 {
-    if(event->buttons() == Qt::LeftButton)
+    if(event->buttons() == Qt::LeftButton && isDrag)
     {
         // 根据鼠标移动的位置，和之前记录的偏移量 dragPosition，计算窗口的新位置并移动窗口
         // 计算出窗口左上角的新位置，使得鼠标与窗口左上角始终保持相同的相对位置
@@ -626,4 +749,14 @@ void KuGouMusic::on_addLocal_clicked()
 
         ui->localPage->addMusicToPlayer(musicList, playlist);
     }
+}
+
+void KuGouMusic::on_min_clicked()
+{
+    showMinimized();
+}
+
+void KuGouMusic::on_max_clicked()
+{
+   QMessageBox::information(this, "提示", "正在加班开发中qwq....");
 }
