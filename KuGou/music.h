@@ -30,6 +30,8 @@ public:
 
     QString getLrcFilePath()const;
 
+    void insertMusicToDB();
+
 private:
     void parseMediaMetaData();
 

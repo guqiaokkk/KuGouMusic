@@ -20,6 +20,9 @@ public:
     iterator findMusicById(const QString &musicId);
     Music *findMusicByUrl(const QUrl& url);
 
+    void writeToDB();
+
+    void readFromDB();
 
 private:
     QVector<Music> musicList;

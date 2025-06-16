@@ -10,6 +10,9 @@
 #include <QJsonObject>
 #include <QDir>
 #include <QFileDialog>
+#include <QMessageBox>
+#include <QSqlQuery>
+
 
 KuGouMusic::KuGouMusic(QWidget *parent)
     : QWidget(parent)
@@ -17,6 +20,12 @@ KuGouMusic::KuGouMusic(QWidget *parent)
 {
     ui->setupUi(this);
     initUI();
+
+    // 初始化数据库
+    initSQLite();
+
+    // 加载数据库歌曲⽂件
+    initMusicList();
 
     //初始化播放器
     initPlayer();
@@ -177,6 +186,55 @@ void KuGouMusic::initPlayer()
 
     // 播放列表项发⽣改变，此时将播放⾳乐收藏到历史记录中
     connect(playlist, &QMediaPlaylist::currentIndexChanged, this, &KuGouMusic::onCurrentIndexChanged);
+}
+
+void KuGouMusic::initSQLite()
+{
+    // 1. 创建数据库连接
+    sqlite = QSqlDatabase::addDatabase("QSQLITE");
+
+    // 2. 设置数据库名称
+    sqlite.setDatabaseName("KuGou.db");
+
+    // 3. 打开数据库
+    if(!sqlite.open())
+    {
+        QMessageBox::critical(this, "KuGouMusic", "数据库打开失败！");
+        return;
+    }
+    qDebug()<<"SQLite连接成功，并创建 [KuGou.db] 数据库!!!";
+
+    // 4. 创建数据库表
+    QString sql = ("CREATE TABLE IF NOT EXISTS musicInfo(\
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,\
+                    musicId varchar(200) UNIQUE,\
+                    musicName varchar(50),\
+                    singerName varchar(50),\
+                    albumName varchar(50),\
+                    duration BIGINT,\
+                    musicUrl varchar(256),\
+                    isLike INTEGER,\
+                    isHistory INTEGER)");
+
+    QSqlQuery query;
+    if(!query.exec(sql))
+    {
+        QMessageBox::critical(this, "KuGouMusic", "初始化错误！！！");
+        return;
+    }
+    qDebug()<<"创建 KuGou表成功!!!";
+
+}
+
+void KuGouMusic::initMusicList()
+{
+    // 1. 从数据库读取歌曲信息
+    musicList.readFromDB();
+
+    // 2. 更新⻚⾯
+    ui->likePage->reFresh(musicList);
+    ui->localPage->reFresh(musicList);
+    ui->recentPage->reFresh(musicList);
 }
 
 void KuGouMusic::onPlayCliked()
@@ -427,6 +485,13 @@ void KuGouMusic::onLrcWordClicked()
 
 void KuGouMusic::on_quit_clicked()
 {
+    // 更新数据库
+    musicList.writeToDB();
+
+    // 关闭数据库连接
+    sqlite.close();
+
+    // 关闭窗⼝
     close();
 }
 

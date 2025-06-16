@@ -8,13 +8,23 @@
 #include <QRegularExpression>
 #include <algorithm> // for std::remove_if
 
+#include <QSqlQuery>
+#include <QSqlError>
 
+Music::Music()
+    : isLike(false)
+    , isHistory(false)
+{
+
+}
 
 Music::Music(const QUrl &url)
      : isLike(false)
      , isHistory(false)
      , musicUrl(url)
 {
+    // 读取url对应的歌曲文件的信息，解析出元数据
+    // 歌曲名称、歌曲作者、歌曲专辑、歌曲持续时长
     musicId = QUuid::createUuid().toString();
     parseMediaMetaData();
 }
@@ -167,6 +177,62 @@ QString Music::getLrcFilePath() const
         // 如果所有方法都失败了，就返回空字符串
         qDebug() << "所有歌词匹配策略均失败，未找到歌词文件。";
         return QString();
+}
+
+// 将当前Music对象更新到数据库
+void Music::insertMusicToDB()
+{
+    // 1. 检测music是否在数据库中存在
+    QSqlQuery query;
+
+    query.prepare("SELECT EXISTS(SELECT 1 FROM musicInfo WHERE musicId = ?)");
+    query.addBindValue(musicId);
+    if(!query.exec())
+    {
+        qDebug() << "查询失败" << query.lastError().text();
+        return;
+    }
+
+    if(query.next())//此时query里保存的 1 或 0
+    {
+        bool isExists = query.value(0).toBool();
+        if(isExists)
+        {
+            // musicId的歌曲已经存在
+            // 2. 存在：不需要再插⼊musci对象，此时只需要将isLike和isHistory属性进⾏更新
+            query.prepare("UPDATE musicInfo SET isLike = ?, isHistory = ? WHERE musicId = ?");
+            query.addBindValue(isLike ? 1 : 0);
+            query.addBindValue(isHistory ? 1 : 0);
+            query.addBindValue(musicId);
+            if(!query.exec())
+            {
+                qDebug()<<"更新失败: "<<query.lastError().text();
+            }
+            qDebug()<<"更新music信息: "<<musicName<<" "<<musicId;
+        }
+        else
+        {
+            // 3. 不存在：直接将music的属性信息插⼊数据库
+            query.prepare("INSERT INTO musicInfo(musicId, musicName, singerName, albumName,\
+                                                 musicUrl, duration, isLike, isHistory)\
+                                          VALUES(?, ?, ?, ?, ?, ?, ?, ?)");
+            query.addBindValue(musicId);
+            query.addBindValue(musicName);
+            query.addBindValue(singerName);
+            query.addBindValue(albumName);
+            query.addBindValue(musicUrl.toLocalFile());
+            query.addBindValue(duration);
+            query.addBindValue(isLike ? 1 : 0);
+            query.addBindValue(isHistory ? 1 : 0);
+
+            if(!query.exec())
+            {
+                qDebug()<<"插⼊失败: "<<query.lastError().text();
+                return;
+            }
+            qDebug()<<"插⼊music信息: "<<musicName<<" "<<musicId;
+        }
+    }
 }
 
 void Music::parseMediaMetaData()

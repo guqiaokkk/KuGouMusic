@@ -10,6 +10,8 @@
 #include <QMediaPlaylist>
 #include <QPropertyAnimation>
 
+#include <QSqlDatabase>
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class KuGouMusic; }
 QT_END_NAMESPACE
@@ -30,6 +32,9 @@ public:
 
     void initPlayer(); //初始化媒体对象
 
+    void initSQLite();
+
+    void initMusicList();
 
 private slots:
     void on_quit_clicked();
@@ -70,6 +75,8 @@ private slots:
 
     void onLrcWordClicked();
 
+
+
 protected:
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
@@ -91,7 +98,11 @@ private:
 
     Music *currentMusic;//当前歌曲
 
-    LrcPage *lrcPage;
-    QPropertyAnimation *lrcAnimation;
+
+    LrcPage *lrcPage; //歌词界面
+    QPropertyAnimation *lrcAnimation; //歌词界面相关的动画
+
+    QSqlDatabase sqlite;
+
 };
 #endif // KUGOUMUSIC_H
